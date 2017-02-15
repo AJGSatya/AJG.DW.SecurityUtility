@@ -1,0 +1,103 @@
+﻿@model IEnumerable<AJG.DW.SecurityUtility.Web.Models.BusinessUnitDWAccess>
+@using GridMvc.Html
+@using GridMvc.Sorting
+
+@{
+    ViewBag.Title = "P&L Access";
+}
+
+
+<meta name="viewport" content="width=device-width" />
+
+<script src="@Url.Content("~/Scripts/typeahead.bundle.min.js")"></script>
+
+
+<div id="gridform">
+
+
+    <div class="float-right">Toggle All: @Html.CheckBox("selectAllCheckBox", false)</div>
+    @Html.Grid(Model).Named("accessGrid").Columns(columns =>
+{
+    columns.Add(i => i.Region).Titled("Region").SetWidth(110);
+    columns.Add(i => i.BusinessUnitDescription).Titled("Business Unit Description").SetWidth(110);
+    columns.Add(i => i.BusinessUnitCode).Titled("Business Unit Code").SetWidth(110).Css("bucode");
+    columns.Add(i => i.HasAccess).Titled("Access").SetWidth(110).RenderValueAs(o => Html.CheckBox("checked", o.HasAccess)).Encoded(false).Sanitized(false);
+}).Sortable(false).EmptyText("No results to display")
+
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#selectAllCheckBox").click(function () {
+            $('input:checkbox').not(this).prop('checked', this.checked);
+            $("tr").toggleClass("highlight", this.checked);
+        });
+
+        $(":checkbox").change(function () {
+            $(this).closest("tr").toggleClass("highlight", this.checked);
+        });
+
+        $("table").tablesorter(6);
+
+        $("menucontainer").tabs();
+
+        $('#id').keydown(function (event) {
+            if (event.keyCode == 13) {
+                this.form.submit();
+                return false;
+            }
+        });
+    });
+
+    var foundUsers = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+            url: '/PLAccess/FindUsers?search=%QUERY',
+            wildcard: '%QUERY'
+        }
+    });
+
+    $('.typeahead').typeahead(null, {
+        name: 'foundUsers',
+        display: 'SearchDisplayText',
+        source: foundUsers
+    });
+
+
+    function updateselected() {
+        var bucodesToSend = new Array();
+        $("tr").each(function (e) {
+            var checkBox = $(this).find("input[type='checkbox']");
+            if (checkBox.is(':checked')) {
+                var buCode = $(this).find(".bucode").text();
+                bucodesToSend.push(buCode);
+            }
+        });
+
+        var postData = { data: bucodesToSend, username: $("#id").val() };
+
+        $.ajax({
+            url: '/PLAccess/update',
+            type: 'POST',
+            data: postData,
+            success: function (data) {
+                if (data.success)
+                    $("#message").text(data.responseText).addClass("alert-success");
+                else
+                    $("#message").text(data.responseText).addClass("alert-danger");
+
+            },
+            dataType: "json",
+            error: function (data) {
+                $("#message").text(data.responseText).addClass("alert-danger");
+            }
+        });
+    }
+
+</script>
+
+<script src="@Url.Content("~/Scripts/jquery.tablesorter.js")"></script>
+
+
+

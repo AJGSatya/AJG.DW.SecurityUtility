@@ -1,0 +1,97 @@
+﻿@using AJG.DW.SecurityUtility.Web.Helpers
+
+<!DOCTYPE html>
+<html>
+<head>
+  
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=11"> 
+    <title>Data warehouse Search and Secure</title>
+    
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <script src="@Url.Content("~/Scripts/jquery-ui.min.js")"></script>
+    <link href="@Url.Content("~/Content/bootstrap.min.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/Content/Gridmvc.css")" rel="stylesheet" />
+</head>
+<body>
+ 
+    <div class="topmessage">
+        @ViewBag.Message
+    </div>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-header">
+           
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="#">@ViewBag.Title</a>
+            <p class="nav navbar-text navbar-fixed-bottom">
+
+                @using (Html.BeginForm("Index", this.ViewContext.RouteData.Values["controller"].ToString()))
+                {
+                    @Html.TextBox("id", null, new { @class = "typeahead form-control searchcnt", @placeholder = "type a username to find" })
+                   
+                     <button class="btn-primary btn-sm hrs" type="submit">lookup</button>
+                    <input type="button" value="update" class="btn-success btn-sm updatebutton" onclick="updateselected();" @ViewBag.IsDisabled />
+
+                }
+
+
+            </p>
+        </div>
+  
+       
+        <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+                <li class='@Html.IsActive("ActiveDirectory", "Index")'>@Html.ActionLink("Active Directory", "Index", "ActiveDirectory")</li>
+                <li class='@Html.IsActive("PLAccess", "Index")'>@Html.ActionLink("P&L Access", "Index", "PLAccess")</li>
+                <li class='@Html.IsActive("DWAccess", "Index")'>@Html.ActionLink("DW Access", "Index", "DWAccess")</li>
+            </ul>
+            
+        </div>
+        
+    </nav>
+
+
+     
+    <div class="container body-content">
+        <div>
+            <div>
+                <div class="alert-info">
+                    <span class="text-danger">@ViewBag.InvaidUser</span>
+                    <div id="message" class=""></div>
+                </div>
+                <img src="~/Images/search-icon-01.jpg" style="width:25px;" />
+                <span style="margin-left:10px;font-family:'Segoe UI';font-weight:bold;font-size:15px;">Data warehouse Search and Secure</span>
+            </div>
+        </div>
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - AJG Data Warehouse security mappings</p>
+        </footer>
+    </div>
+
+
+
+    <script type="text/javascript">
+
+    $(function () {
+        $('.navbar-nav li').click(function () {
+            $(this).siblings().removeClass('active');
+            $(this).addClass('active');
+        });
+    });
+
+    </script>
+
+    
+</body>
+</html>

@@ -1,0 +1,93 @@
+﻿@model IEnumerable<AJG.DW.SecurityUtility.Web.Models.BranchDWAccess>
+@using GridMvc.Html
+@using GridMvc.Sorting
+@using AJG.DW.SecurityUtility.Web.Models;
+
+@{
+    ViewBag.Title = "Active Directory";
+}
+
+<meta name="viewport" content="width=device-width" />
+<script src="@Url.Content("~/Scripts/typeahead.bundle.min.js")"></script>
+
+
+
+<div id="gridform">
+    <div id="adgroups">
+        <div class="panel panel-default">
+            <div class="panel-heading">Add User to Active Directory</div>
+            <div class="panel-body">
+                <div id="groups">
+                    @if (ViewBag.ActiveDirectoryGroups != null)
+                    {
+                        foreach (ActiveDirectoryGroupItem group in ViewBag.ActiveDirectoryGroups)
+                        {
+                            <div class="checkbox">
+                                <label>
+                                    @group.Name
+                                    @Html.CheckBox(group.Name, group.Value, new { @value = group.Name, @id = group.Name })
+                                </label>
+                            </div>
+                        }
+                    }
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+
+    var foundUsers = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace('value'),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        remote: {
+            url: '/PLAccess/FindUsers?search=%QUERY',
+            wildcard: '%QUERY'
+        }
+    });
+
+    $('.typeahead').typeahead(null, {
+        name: 'foundUsers',
+        display: 'SearchDisplayText',
+        source: foundUsers
+    });
+
+
+    function updateselected() {
+        var adgroupsToSend = new Array();
+
+        $("#groups .checkbox").each(function (e) {
+            var checkBox = $(this).find("input[type='checkbox']");
+            var ch = { Name: checkBox.val(), Value: document.getElementById(checkBox.val()).checked };
+            adgroupsToSend.push(ch);
+        });
+
+        var postData = { username: $("#id").val(), adgroups: adgroupsToSend };
+
+        $.ajax({
+            url: '/ActiveDirectory/update',
+            type: 'POST',
+            data: postData,
+            success: function (data) {
+                if (data.success)
+                    $("#message").text(data.responseText).addClass("alert-success");
+                else
+                    $("#message").text(data.responseText).addClass("alert-danger");
+
+            },
+            dataType: "json",
+            error: function (data) {
+                $("#message").text(data.responseText).addClass("alert-danger");
+            }
+        });
+    }
+
+</script>
+
+<script src="@Url.Content("~/Scripts/jquery.tablesorter.js")"></script>
+
+
+
